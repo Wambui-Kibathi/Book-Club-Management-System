@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from models import Base
+from . import Base
 
 class Club(Base):
     __tablename__ = "clubs"
@@ -8,8 +8,9 @@ class Club(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String)
+    genre = Column(String)
     members = relationship("Member", secondary="club_members", back_populates="clubs")
     meetings = relationship("Meeting", back_populates="club")
 
     def __repr__(self):
-        return f"<Club(id={self.id}, name='{self.name}')>"
+        return f"<Club(id={self.id}, name='{self.name}', genre='{self.genre}')>"
