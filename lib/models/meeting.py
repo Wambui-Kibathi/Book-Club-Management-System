@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
-from lib.models import Base
+from models import Base
 
 class Meeting(Base):
     __tablename__ = "meetings"

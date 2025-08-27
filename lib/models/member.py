@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Table, ForeignKey
 from sqlalchemy.orm import relationship
-from lib.models import Base
+from models import Base
 
 club_members = Table(
     "club_members",

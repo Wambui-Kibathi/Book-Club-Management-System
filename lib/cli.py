@@ -10,7 +10,6 @@ from helpers import (
     create_club,
     add_member_to_club,
     schedule_meeting,
-    generate_sample_data
 )
 
 def main():
@@ -38,8 +37,6 @@ def main():
             add_member_to_club()
         elif choice == "9":
             schedule_meeting()
-        elif choice == "10":
-            generate_sample_data()
         else:
             print("Invalid choice. Please try again.")
 
@@ -56,7 +53,6 @@ def menu():
     print("7. Create a new club")
     print("8. Add member to club")
     print("9. Schedule a meeting")
-    print("10. Generate sample data (Faker)")
 
 if __name__ == "__main__":
     main()

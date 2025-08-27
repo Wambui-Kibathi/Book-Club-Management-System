@@ -1,11 +1,9 @@
-from lib.models import create_tables, session
-from lib.models.book import Book
-from lib.models.member import Member
-from lib.models.club import Club
-from lib.models.meeting import Meeting
-from helpers import generate_sample_data
+from models import create_tables, session
+from models.book import Book
+from models.member import Member
+from models.club import Club
+from models.meeting import Meeting
 
 if __name__ == "__main__":
     create_tables()
-    generate_sample_data()
-    print("Sample data created successfully!")
+    print("Data created successfully!")
