@@ -5,54 +5,53 @@ from .models.club import Club
 from .models.meeting import Meeting
 from datetime import date
 
+# Sample data constants
+SAMPLE_BOOKS = [
+    ("To Kill a Mockingbird", "Harper Lee", "Fiction", "A story of racial injustice", 1960),
+    ("1984", "George Orwell", "Dystopian", "A dystopian social science fiction novel", 1949),
+    ("Pride and Prejudice", "Jane Austen", "Romance", "A romantic novel of manners", 1813)
+]
+
+SAMPLE_MEMBERS = [
+    ("Alice Johnson", "alice@email.com"),
+    ("Bob Smith", "bob@email.com"),
+    ("Carol Williams", "carol@email.com")
+]
+
+SAMPLE_CLUBS = [
+    ("Classic Literature Club", "Discussing timeless classics"),
+    ("Sci-Fi Enthusiasts", "Exploring science fiction worlds")
+]
+
 def create_sample_data():
-    """Create simple sample data without Faker"""
+    """Create sample data for testing"""
     create_tables()
     
-    # Create sample books
-    books = [
-        Book(title="To Kill a Mockingbird", author="Harper Lee", genre="Fiction", 
-             summary="A story of racial injustice", publication_year=1960),
-        Book(title="1984", author="George Orwell", genre="Dystopian", 
-             summary="A dystopian social science fiction novel", publication_year=1949),
-        Book(title="Pride and Prejudice", author="Jane Austen", genre="Romance", 
-             summary="A romantic novel of manners", publication_year=1813)
-    ]
+    # Create and add books
+    books = [Book(title=title, author=author, genre=genre, summary=summary, publication_year=year) 
+             for title, author, genre, summary, year in SAMPLE_BOOKS]
     
-    # Create sample members
-    members = [
-        Member(name="Alice Johnson", email="alice@email.com"),
-        Member(name="Bob Smith", email="bob@email.com"),
-        Member(name="Carol Williams", email="carol@email.com")
-    ]
+    # Create and add members
+    members = [Member(name=name, email=email) for name, email in SAMPLE_MEMBERS]
     
-    # Create sample clubs
-    clubs = [
-        Club(name="Classic Literature Club", description="Discussing timeless classics"),
-        Club(name="Sci-Fi Enthusiasts", description="Exploring science fiction worlds")
-    ]
+    # Create and add clubs
+    clubs = [Club(name=name, description=desc) for name, desc in SAMPLE_CLUBS]
     
-    # Add all to session and commit
-    session.add_all(books)
-    session.add_all(members)
-    session.add_all(clubs)
+    session.add_all(books + members + clubs)
     session.commit()
     
     # Add members to clubs
     clubs[0].members.extend([members[0], members[1]])
     clubs[1].members.extend([members[1], members[2]])
     
-    # Create sample meetings
+    # Create meetings
     meetings = [
-        Meeting(date=date(2023, 10, 15), location="Central Library", 
-                club_id=clubs[0].id, book_id=books[0].id),
-        Meeting(date=date(2023, 11, 5), location="Coffee Shop Downtown", 
-                club_id=clubs[1].id, book_id=books[1].id)
+        Meeting(date=date(2023, 10, 15), location="Central Library", club_id=clubs[0].id, book_id=books[0].id),
+        Meeting(date=date(2023, 11, 5), location="Coffee Shop Downtown", club_id=clubs[1].id, book_id=books[1].id)
     ]
     
     session.add_all(meetings)
     session.commit()
-    
     print("Sample data created successfully!")
 
 if __name__ == "__main__":

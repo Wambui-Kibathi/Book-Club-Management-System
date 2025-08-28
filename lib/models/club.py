@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from . import Base
 
 class Club(Base):
-    __tablename__ = "clubs"
+    __tablename__ = "club"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)

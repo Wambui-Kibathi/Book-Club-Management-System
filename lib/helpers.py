@@ -14,6 +14,33 @@ def exit_program():
     print("Thank you for using Book Club Manager. Goodbye!")
     exit()
 
+def get_entity_by_id(model, entity_id, entity_name):
+    """Get entity by ID with error handling"""
+    try:
+        entity = session.query(model).filter_by(id=int(entity_id)).first()
+        if not entity:
+            print(f"{entity_name} with ID {entity_id} not found")
+        return entity
+    except ValueError:
+        print(f"Invalid {entity_name.lower()} ID")
+        return None
+
+def safe_commit(success_msg, error_msg):
+    """Safely commit changes with error handling"""
+    try:
+        session.commit()
+        print(success_msg)
+        return True
+    except Exception as e:
+        print(f"{error_msg}: {e}")
+        session.rollback()
+        return False
+
+def get_input_or_default(prompt, default):
+    """Get user input or return default value"""
+    value = input(prompt)
+    return value if value else default
+
 # Book-related functions
 def list_books():
     books = session.query(Book).all()
@@ -49,61 +76,42 @@ def create_book():
             publication_year=int(publication_year)
         )
         session.add(book)
-        session.commit()
-        print(f"Successfully created book: {title}")
-    except Exception as e:
-        print(f"Error creating book: {e}")
-        session.rollback()
+        safe_commit(f"Successfully created book: {title}", "Error creating book")
+    except ValueError:
+        print("Invalid publication year")
 
 def edit_book():
     list_books()
     book_id = input("Enter the ID of the book to edit: ")
+    book = get_entity_by_id(Book, book_id, "Book")
+    if not book:
+        return
     
-    try:
-        book = session.query(Book).filter_by(id=int(book_id)).first()
-        if not book:
-            print(f"Book with ID {book_id} not found")
-            return
-        
-        print(f"Editing: {book.title} by {book.author}")
-        print("Leave field blank to keep current value")
-        
-        title = input(f"New title [{book.title}]: ") or book.title
-        author = input(f"New author [{book.author}]: ") or book.author
-        genre = input(f"New genre [{book.genre}]: ") or book.genre
-        summary = input(f"New summary [{book.summary}]: ") or book.summary
-        
-        publication_year = input(f"New publication year [{book.publication_year}]: ")
-        publication_year = int(publication_year) if publication_year else book.publication_year
-        
-        book.title = title
-        book.author = author
-        book.genre = genre
-        book.summary = summary
-        book.publication_year = publication_year
-        
-        session.commit()
-        print(f"Successfully updated book: {book.title}")
-        
-    except Exception as e:
-        print(f"Error editing book: {e}")
-        session.rollback()
+    print(f"Editing: {book.title} by {book.author}")
+    print("Leave field blank to keep current value")
+    
+    book.title = get_input_or_default(f"New title [{book.title}]: ", book.title)
+    book.author = get_input_or_default(f"New author [{book.author}]: ", book.author)
+    book.genre = get_input_or_default(f"New genre [{book.genre}]: ", book.genre)
+    book.summary = get_input_or_default(f"New summary [{book.summary}]: ", book.summary)
+    
+    year_input = input(f"New publication year [{book.publication_year}]: ")
+    if year_input:
+        try:
+            book.publication_year = int(year_input)
+        except ValueError:
+            print("Invalid year, keeping current value")
+    
+    safe_commit(f"Successfully updated book: {book.title}", "Error editing book")
 
 def delete_book():
     list_books()
     book_id = input("Enter the ID of the book to delete: ")
-    
-    try:
-        book = session.query(Book).filter_by(id=int(book_id)).first()
-        if book:
-            session.delete(book)
-            session.commit()
-            print(f"Successfully deleted book: {book.title}")
-        else:
-            print(f"Book with ID {book_id} not found")
-    except Exception as e:
-        print(f"Error deleting book: {e}")
-        session.rollback()
+    book = get_entity_by_id(Book, book_id, "Book")
+    if book:
+        title = book.title
+        session.delete(book)
+        safe_commit(f"Successfully deleted book: {title}", "Error deleting book")
 
 # Member-related functions
 def list_members():
@@ -118,56 +126,33 @@ def create_member():
     name = input("Enter member name: ")
     email = input("Enter member email: ")
     
-    try:
-        member = Member(name=name, email=email)
-        session.add(member)
-        session.commit()
-        print(f"Successfully created member: {name}")
-    except Exception as e:
-        print(f"Error creating member: {e}")
-        session.rollback()
+    member = Member(name=name, email=email)
+    session.add(member)
+    safe_commit(f"Successfully created member: {name}", "Error creating member")
 
 def edit_member():
     list_members()
     member_id = input("Enter the ID of the member to edit: ")
+    member = get_entity_by_id(Member, member_id, "Member")
+    if not member:
+        return
     
-    try:
-        member = session.query(Member).filter_by(id=int(member_id)).first()
-        if not member:
-            print(f"Member with ID {member_id} not found")
-            return
-        
-        print(f"Editing: {member.name} ({member.email})")
-        print("Leave field blank to keep current value")
-        
-        name = input(f"New name [{member.name}]: ") or member.name
-        email = input(f"New email [{member.email}]: ") or member.email
-        
-        member.name = name
-        member.email = email
-        
-        session.commit()
-        print(f"Successfully updated member: {member.name}")
-        
-    except Exception as e:
-        print(f"Error editing member: {e}")
-        session.rollback()
+    print(f"Editing: {member.name} ({member.email})")
+    print("Leave field blank to keep current value")
+    
+    member.name = get_input_or_default(f"New name [{member.name}]: ", member.name)
+    member.email = get_input_or_default(f"New email [{member.email}]: ", member.email)
+    
+    safe_commit(f"Successfully updated member: {member.name}", "Error editing member")
 
 def delete_member():
     list_members()
     member_id = input("Enter the ID of the member to delete: ")
-    
-    try:
-        member = session.query(Member).filter_by(id=int(member_id)).first()
-        if member:
-            session.delete(member)
-            session.commit()
-            print(f"Successfully deleted member: {member.name}")
-        else:
-            print(f"Member with ID {member_id} not found")
-    except Exception as e:
-        print(f"Error deleting member: {e}")
-        session.rollback()
+    member = get_entity_by_id(Member, member_id, "Member")
+    if member:
+        name = member.name
+        session.delete(member)
+        safe_commit(f"Successfully deleted member: {name}", "Error deleting member")
 
 # Club-related functions
 def list_clubs():
@@ -184,83 +169,53 @@ def create_club():
     description = input("Enter club description: ")
     genre = input("Enter club genre: ")
 
-    try:
-        club = Club(name=name, description=description, genre=genre)
-        session.add(club)
-        session.commit()
-        print(f"Successfully created club: {name}")
-    except Exception as e:
-        print(f"Error creating club: {e}")
-        session.rollback()
+    club = Club(name=name, description=description, genre=genre)
+    session.add(club)
+    safe_commit(f"Successfully created club: {name}", "Error creating club")
 
 def edit_club():
     list_clubs()
     club_id = input("Enter the ID of the club to edit: ")
+    club = get_entity_by_id(Club, club_id, "Club")
+    if not club:
+        return
     
-    try:
-        club = session.query(Club).filter_by(id=int(club_id)).first()
-        if not club:
-            print(f"Club with ID {club_id} not found")
-            return
-        
-        print(f"Editing: {club.name}")
-        print("Leave field blank to keep current value")
-        
-        name = input(f"New name [{club.name}]: ") or club.name
-        description = input(f"New description [{club.description}]: ") or club.description
-        genre = input(f"New genre [{club.genre}]: ") or club.genre
+    print(f"Editing: {club.name}")
+    print("Leave field blank to keep current value")
+    
+    club.name = get_input_or_default(f"New name [{club.name}]: ", club.name)
+    club.description = get_input_or_default(f"New description [{club.description}]: ", club.description)
+    club.genre = get_input_or_default(f"New genre [{club.genre}]: ", club.genre)
 
-        club.name = name
-        club.description = description
-        club.genre = genre
-
-        session.commit()
-        print(f"Successfully updated club: {club.name}")
-        
-    except Exception as e:
-        print(f"Error editing club: {e}")
-        session.rollback()
+    safe_commit(f"Successfully updated club: {club.name}", "Error editing club")
 
 def delete_club():
     list_clubs()
     club_id = input("Enter the ID of the club to delete: ")
-    
-    try:
-        club = session.query(Club).filter_by(id=int(club_id)).first()
-        if club:
-            session.delete(club)
-            session.commit()
-            print(f"Successfully deleted club: {club.name}")
-        else:
-            print(f"Club with ID {club_id} not found")
-    except Exception as e:
-        print(f"Error deleting club: {e}")
-        session.rollback()
+    club = get_entity_by_id(Club, club_id, "Club")
+    if club:
+        name = club.name
+        session.delete(club)
+        safe_commit(f"Successfully deleted club: {name}", "Error deleting club")
 
 def add_member_to_club():
     list_clubs()
     club_id = input("Enter club ID: ")
+    club = get_entity_by_id(Club, club_id, "Club")
+    if not club:
+        return
     
     list_members()
     member_id = input("Enter member ID: ")
+    member = get_entity_by_id(Member, member_id, "Member")
+    if not member:
+        return
     
-    try:
-        club = session.query(Club).filter_by(id=int(club_id)).first()
-        member = session.query(Member).filter_by(id=int(member_id)).first()
-        
-        if club and member:
-            # Check if member is already in the club
-            if member in club.members:
-                print(f"{member.name} is already in {club.name}")
-            else:
-                club.members.append(member)
-                session.commit()
-                print(f"Successfully added {member.name} to {club.name}")
-        else:
-            print("Invalid club or member ID")
-    except Exception as e:
-        print(f"Error adding member to club: {e}")
-        session.rollback()
+    if member in club.members:
+        print(f"{member.name} is already in {club.name}")
+    else:
+        club.members.append(member)
+        safe_commit(f"Successfully added {member.name} to {club.name}", "Error adding member to club")
 
 # Meeting-related functions
 def list_meetings():
@@ -276,6 +231,9 @@ def list_meetings():
 def schedule_meeting():
     list_clubs()
     club_id = input("Enter club ID: ")
+    club = get_entity_by_id(Club, club_id, "Club")
+    if not club:
+        return
     
     list_books()
     book_id = input("Enter book ID (or leave blank if not decided): ")
@@ -296,61 +254,46 @@ def schedule_meeting():
             meeting.book_id = int(book_id)
             
         session.add(meeting)
-        session.commit()
-        print("Successfully scheduled meeting")
-    except Exception as e:
-        print(f"Error scheduling meeting: {e}")
-        session.rollback()
+        safe_commit("Successfully scheduled meeting", "Error scheduling meeting")
+    except ValueError:
+        print("Invalid date format. Please use YYYY-MM-DD")
 
 def edit_meeting():
     list_meetings()
     meeting_id = input("Enter the ID of the meeting to edit: ")
+    meeting = get_entity_by_id(Meeting, meeting_id, "Meeting")
+    if not meeting:
+        return
     
-    try:
-        meeting = session.query(Meeting).filter_by(id=int(meeting_id)).first()
-        if not meeting:
-            print(f"Meeting with ID {meeting_id} not found")
-            return
-        
-        print(f"Editing: {meeting.club.name} meeting on {meeting.date}")
-        print("Leave field blank to keep current value")
-        
-        # Show current book if exists
-        current_book = meeting.book.title if meeting.book else "None"
-        list_books()
-        book_id = input(f"New book ID [{current_book}]: ")
-        book_id = int(book_id) if book_id else meeting.book_id
-        
-        date_str = input(f"New date (YYYY-MM-DD) [{meeting.date}]: ")
-        date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else meeting.date
-        
-        location = input(f"New location [{meeting.location}]: ") or meeting.location
-        notes = input(f"New notes [{meeting.notes}]: ") or meeting.notes
-        
-        meeting.book_id = book_id
-        meeting.date = date
-        meeting.location = location
-        meeting.notes = notes
-        
-        session.commit()
-        print(f"Successfully updated meeting on {meeting.date}")
-        
-    except Exception as e:
-        print(f"Error editing meeting: {e}")
-        session.rollback()
+    print(f"Editing: {meeting.club.name} meeting on {meeting.date}")
+    print("Leave field blank to keep current value")
+    
+    current_book = meeting.book.title if meeting.book else "None"
+    list_books()
+    book_id = input(f"New book ID [{current_book}]: ")
+    if book_id:
+        try:
+            meeting.book_id = int(book_id)
+        except ValueError:
+            print("Invalid book ID, keeping current value")
+    
+    date_str = input(f"New date (YYYY-MM-DD) [{meeting.date}]: ")
+    if date_str:
+        try:
+            meeting.date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            print("Invalid date format, keeping current value")
+    
+    meeting.location = get_input_or_default(f"New location [{meeting.location}]: ", meeting.location)
+    meeting.notes = get_input_or_default(f"New notes [{meeting.notes}]: ", meeting.notes)
+    
+    safe_commit(f"Successfully updated meeting on {meeting.date}", "Error editing meeting")
 
 def delete_meeting():
     list_meetings()
     meeting_id = input("Enter the ID of the meeting to delete: ")
-    
-    try:
-        meeting = session.query(Meeting).filter_by(id=int(meeting_id)).first()
-        if meeting:
-            session.delete(meeting)
-            session.commit()
-            print(f"Successfully deleted meeting on {meeting.date}")
-        else:
-            print(f"Meeting with ID {meeting_id} not found")
-    except Exception as e:
-        print(f"Error deleting meeting: {e}")
-        session.rollback()
+    meeting = get_entity_by_id(Meeting, meeting_id, "Meeting")
+    if meeting:
+        date = meeting.date
+        session.delete(meeting)
+        safe_commit(f"Successfully deleted meeting on {date}", "Error deleting meeting")
