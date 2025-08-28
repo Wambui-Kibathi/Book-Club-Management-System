@@ -176,14 +176,16 @@ def list_clubs():
         print("No clubs found.")
         return
     for club in clubs:
-        print(f"{club.id}: {club.name} - {club.description}")
+        genre_info = f" - Genre: {club.genre}" if club.genre else ""
+        print(f"{club.id}: {club.name} - {club.description}{genre_info}")
 
 def create_club():
     name = input("Enter club name: ")
     description = input("Enter club description: ")
-    
+    genre = input("Enter club genre: ")
+
     try:
-        club = Club(name=name, description=description)
+        club = Club(name=name, description=description, genre=genre)
         session.add(club)
         session.commit()
         print(f"Successfully created club: {name}")
@@ -206,10 +208,12 @@ def edit_club():
         
         name = input(f"New name [{club.name}]: ") or club.name
         description = input(f"New description [{club.description}]: ") or club.description
-        
+        genre = input(f"New genre [{club.genre}]: ") or club.genre
+
         club.name = name
         club.description = description
-        
+        club.genre = genre
+
         session.commit()
         print(f"Successfully updated club: {club.name}")
         
