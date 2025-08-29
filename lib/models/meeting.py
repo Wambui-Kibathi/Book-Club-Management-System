@@ -8,7 +8,7 @@ class Meeting(Base):
     id = Column(Integer, primary_key=True)
     club_id = Column(Integer, ForeignKey("clubs.id"), nullable=False)
     date = Column(Date, nullable=False)
-    location = Column(String)
+    location = Column(String, nullable=False)
     notes = Column(String)
     book_id = Column(Integer, ForeignKey("books.id"))
 
