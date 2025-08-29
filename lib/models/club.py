@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from . import Base
+from lib. import Base
 
 class Club(Base):
     __tablename__ = "clubs"
