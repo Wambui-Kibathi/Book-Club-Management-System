@@ -90,10 +90,3 @@ This project uses Alembic for database migrations:
 ## Database
 
 The application uses SQLite with SQLAlchemy ORM and Alembic for migrations. The database file `book_club.db` will be created automatically when you first run the application.
-
-## Sample Data
-
-To populate the database with sample data using Faker, run:
-`python lib/debug.py`
-
-Or use option 10 in the main menu.
