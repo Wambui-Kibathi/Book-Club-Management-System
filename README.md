@@ -90,3 +90,11 @@ This project uses Alembic for database migrations:
 ## Database
 
 The application uses SQLite with SQLAlchemy ORM and Alembic for migrations. The database file `book_club.db` will be created automatically when you first run the application.
+
+## License
+
+This project is licensed under the MIT License.
+
+## Author
+
+Wambui Kibathi
